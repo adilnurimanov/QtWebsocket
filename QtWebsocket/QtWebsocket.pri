@@ -1,19 +1,19 @@
 QT += network
 
 SOURCES += \
-    QWsServer.cpp \
-    QWsSocket.cpp \
-    QWsHandshake.cpp \
-    QWsFrame.cpp \
-    QTlsServer.cpp \
-    functions.cpp
+    $$PWD/QWsServer.cpp \
+    $$PWD/QWsSocket.cpp \
+    $$PWD/QWsHandshake.cpp \
+    $$PWD/QWsFrame.cpp \
+    $$PWD/QTlsServer.cpp \
+    $$PWD/functions.cpp
 
 HEADERS += \
-    QWsServer.h \
-    QWsSocket.h \
-    QWsHandshake.h \
-    QWsFrame.h \
-    QTlsServer.h \
-    functions.h \
-    WsEnums.h 
+    $$PWD/QWsServer.h \
+    $$PWD/QWsSocket.h \
+    $$PWD/QWsHandshake.h \
+    $$PWD/QWsFrame.h \
+    $$PWD/QTlsServer.h \
+    $$PWD/functions.h \
+    $$PWD/WsEnums.h
 
