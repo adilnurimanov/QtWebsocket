@@ -1,5 +1,7 @@
 QT += network
 
+INCLUDEPATH += $$PWD/
+
 SOURCES += \
     $$PWD/QWsServer.cpp \
     $$PWD/QWsSocket.cpp \

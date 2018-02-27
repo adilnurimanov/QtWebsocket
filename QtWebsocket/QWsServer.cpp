@@ -27,7 +27,7 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 namespace QtWebsocket
 {
 
-QWsServer::QWsServer(QObject* parent, Protocol allowedProtocols)
+QWebSocketServer::QWebSocketServer(QObject* parent, Protocol allowedProtocols)
 	: QObject(parent),
 	tcpServer(new QTcpServer(this)),
 	tlsServer(this, allowedProtocols)
@@ -43,37 +43,37 @@ QWsServer::QWsServer(QObject* parent, Protocol allowedProtocols)
 	}
 }
 
-QWsServer::~QWsServer()
+QWebSocketServer::~QWebSocketServer()
 {
 	tcpServer->deleteLater();
 }
 
-bool QWsServer::listen(const QHostAddress & address, quint16 port)
+bool QWebSocketServer::listen(const QHostAddress & address, quint16 port)
 {
 	return tcpServer->listen(address, port);
 }
 
-void QWsServer::close()
+void QWebSocketServer::close()
 {
 	tcpServer->close();
 }
 
-Protocol QWsServer::allowedProtocols()
+Protocol QWebSocketServer::allowedProtocols()
 {
 	return tlsServer.allowedProtocols();
 }
 
-QAbstractSocket::SocketError QWsServer::serverError()
+QAbstractSocket::SocketError QWebSocketServer::serverError()
 {
 	return tcpServer->serverError();
 }
 
-QString QWsServer::errorString()
+QString QWebSocketServer::errorString()
 {
 	return tcpServer->errorString();
 }
 
-void QWsServer::newTcpConnection()
+void QWebSocketServer::newTcpConnection()
 {
 	QTcpSocket* tcpSocket = tcpServer->nextPendingConnection();
 	if (tcpSocket == NULL)
@@ -85,7 +85,7 @@ void QWsServer::newTcpConnection()
 	handshakeBuffer.insert(tcpSocket, new QWsHandshake(WsClientMode));
 }
 
-void QWsServer::newTlsConnection(QSslSocket* serverSocket)
+void QWebSocketServer::newTlsConnection(QSslSocket* serverSocket)
 {
 	if (serverSocket == NULL)
 	{
@@ -96,7 +96,7 @@ void QWsServer::newTlsConnection(QSslSocket* serverSocket)
 	handshakeBuffer.insert(serverSocket, new QWsHandshake(WsClientMode));
 }
 
-void QWsServer::tcpSocketDisconnected()
+void QWebSocketServer::tcpSocketDisconnected()
 {
 	QTcpSocket* tcpSocket = qobject_cast<QTcpSocket*>(sender());
 	if (tcpSocket == NULL)
@@ -109,7 +109,7 @@ void QWsServer::tcpSocketDisconnected()
 	tcpSocket->deleteLater();
 }
 
-void QWsServer::closeTcpConnection()
+void QWebSocketServer::closeTcpConnection()
 {
 	QTcpSocket* tcpSocket = qobject_cast<QTcpSocket*>(sender());
 	if (tcpSocket == NULL)
@@ -123,13 +123,13 @@ void QWsServer::closeTcpConnection()
 static void showErrorAndClose(QTcpSocket* tcpSocket)
 {
 	// Send bad request response
-	QString response = QWsServer::composeBadRequestResponse(QList<EWebsocketVersion>() << WS_V6 << WS_V7 << WS_V8 << WS_V13);
+	QString response = QWebSocketServer::composeBadRequestResponse(QList<EWebsocketVersion>() << WS_V6 << WS_V7 << WS_V8 << WS_V13);
 	tcpSocket->write(response.toUtf8());
 	tcpSocket->flush();
 	tcpSocket->close();
 }
 
-void QWsServer::dataReceived()
+void QWebSocketServer::dataReceived()
 {
 	QTcpSocket* tcpSocket = qobject_cast<QTcpSocket*>(sender());
 	if (tcpSocket == NULL)
@@ -172,27 +172,27 @@ void QWsServer::dataReceived()
 
 	if (handshake.version >= WS_V6)
 	{
-		QByteArray accept = QWsSocket::computeAcceptV4(handshake.key);
-		handshakeResponse = QWsServer::composeOpeningHandshakeResponseV6(accept, handshake.protocol).toUtf8();
+		QByteArray accept = QWebSocket::computeAcceptV4(handshake.key);
+		handshakeResponse = QWebSocketServer::composeOpeningHandshakeResponseV6(accept, handshake.protocol).toUtf8();
 	}
 	else if (handshake.version >= WS_V4)
 	{
-		QByteArray accept = QWsSocket::computeAcceptV4(handshake.key);
-		QByteArray nonce = QWsSocket::generateNonce();
-		handshakeResponse = QWsServer::composeOpeningHandshakeResponseV4(accept, nonce, handshake.protocol).toUtf8();
+		QByteArray accept = QWebSocket::computeAcceptV4(handshake.key);
+		QByteArray nonce = QWebSocket::generateNonce();
+		handshakeResponse = QWebSocketServer::composeOpeningHandshakeResponseV4(accept, nonce, handshake.protocol).toUtf8();
 	}
 	else // version WS_V0
 	{
-		QByteArray accept = QWsSocket::computeAcceptV0(handshake.key1, handshake.key2, handshake.key3);
+		QByteArray accept = QWebSocket::computeAcceptV0(handshake.key1, handshake.key2, handshake.key3);
 		// safari 5.1.7 don't accept the utf8 charset here...
-		handshakeResponse = QWsServer::composeOpeningHandshakeResponseV0(accept, handshake.origin, handshake.hostAddress, handshake.hostPort, handshake.resourceName , handshake.protocol).toLatin1();
+		handshakeResponse = QWebSocketServer::composeOpeningHandshakeResponseV0(accept, handshake.origin, handshake.hostAddress, handshake.hostPort, handshake.resourceName , handshake.protocol).toLatin1();
 	}
 	
 	// Send opening handshake response
 	tcpSocket->write(handshakeResponse);
 	tcpSocket->flush();
 
-	QWsSocket* wsSocket = new QWsSocket(this, tcpSocket, handshake.version);
+	QWebSocket* wsSocket = new QWebSocket(this, tcpSocket, handshake.version);
 	wsSocket->setResourceName(handshake.resourceName);
 	wsSocket->setHost(handshake.host);
 	wsSocket->setHostAddress(handshake.hostAddress);
@@ -200,7 +200,7 @@ void QWsServer::dataReceived()
 	wsSocket->setOrigin(handshake.origin);
 	wsSocket->setProtocol(handshake.protocol);
 	wsSocket->setExtensions(handshake.extensions);
-	wsSocket->_wsMode = WsServerMode;
+	wsSocket->setWsMode(WsServerMode);
 	
 	QWsHandshake* hsTmp = handshakeBuffer.take(tcpSocket);
 	delete hsTmp;
@@ -213,17 +213,17 @@ void QWsServer::dataReceived()
 	emit newConnection();
 }
 
-void QWsServer::incomingConnection(int socketDescriptor)
+void QWebSocketServer::incomingConnection(int socketDescriptor)
 {
 	QTcpSocket* tcpSocket = new QTcpSocket(tcpServer);
 	tcpSocket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState);
-	QWsSocket* wsSocket = new QWsSocket(this, tcpSocket);
+	QWebSocket* wsSocket = new QWebSocket(this, tcpSocket);
 
 	addPendingConnection(wsSocket);
 	emit newConnection();
 }
 
-void QWsServer::addPendingConnection(QWsSocket* socket)
+void QWebSocketServer::addPendingConnection(QWebSocket* socket)
 {
 	if (pendingConnections.size() < maxPendingConnections())
 	{
@@ -231,12 +231,12 @@ void QWsServer::addPendingConnection(QWsSocket* socket)
 	}
 }
 
-QWsSocket* QWsServer::nextPendingConnection()
+QWebSocket* QWebSocketServer::nextPendingConnection()
 {
 	return pendingConnections.dequeue();
 }
 
-bool QWsServer::hasPendingConnections()
+bool QWebSocketServer::hasPendingConnections()
 {
 	if (pendingConnections.size() > 0)
 	{
@@ -245,57 +245,57 @@ bool QWsServer::hasPendingConnections()
 	return false;
 }
 
-int QWsServer::maxPendingConnections()
+int QWebSocketServer::maxPendingConnections()
 {
 	return tcpServer->maxPendingConnections();
 }
 
-bool QWsServer::isListening()
+bool QWebSocketServer::isListening()
 {
 	return tcpServer->isListening();
 }
 
-QNetworkProxy QWsServer::proxy()
+QNetworkProxy QWebSocketServer::proxy()
 {
 	return tcpServer->proxy();
 }
 
-QHostAddress QWsServer::serverAddress()
+QHostAddress QWebSocketServer::serverAddress()
 {
 	return tcpServer->serverAddress();
 }
 
-quint16 QWsServer::serverPort()
+quint16 QWebSocketServer::serverPort()
 {
 	return tcpServer->serverPort();
 }
 
-void QWsServer::setMaxPendingConnections(int numConnections)
+void QWebSocketServer::setMaxPendingConnections(int numConnections)
 {
 	tcpServer->setMaxPendingConnections(numConnections);
 }
 
-void QWsServer::setProxy(const QNetworkProxy & networkProxy)
+void QWebSocketServer::setProxy(const QNetworkProxy & networkProxy)
 {
 	tcpServer->setProxy(networkProxy);
 }
 
-bool QWsServer::setSocketDescriptor(int socketDescriptor)
+bool QWebSocketServer::setSocketDescriptor(int socketDescriptor)
 {
 	return tcpServer->setSocketDescriptor(socketDescriptor);
 }
 
-int QWsServer::socketDescriptor()
+int QWebSocketServer::socketDescriptor()
 {
 	return tcpServer->socketDescriptor();
 }
 
-bool QWsServer::waitForNewConnection(int msec, bool* timedOut)
+bool QWebSocketServer::waitForNewConnection(int msec, bool* timedOut)
 {
 	return tcpServer->waitForNewConnection(msec, timedOut);
 }
 
-QString QWsServer::composeOpeningHandshakeResponseV0(QByteArray accept, QString origin, QString hostAddress, QString hostPort, QString resourceName, QString protocol)
+QString QWebSocketServer::composeOpeningHandshakeResponseV0(QByteArray accept, QString origin, QString hostAddress, QString hostPort, QString resourceName, QString protocol)
 {
 	QString response;
 	response += QLatin1String("HTTP/1.1 101 WebSocket Protocol Handshake\r\n");
@@ -321,7 +321,7 @@ QString QWsServer::composeOpeningHandshakeResponseV0(QByteArray accept, QString 
 	return response;
 }
 
-QString QWsServer::composeOpeningHandshakeResponseV4(QByteArray accept, QByteArray nonce, QString protocol, QString extensions)
+QString QWebSocketServer::composeOpeningHandshakeResponseV4(QByteArray accept, QByteArray nonce, QString protocol, QString extensions)
 {
 	QString response;
 	response += QLatin1String("HTTP/1.1 101 WebSocket Protocol Handshake\r\n");
@@ -341,7 +341,7 @@ QString QWsServer::composeOpeningHandshakeResponseV4(QByteArray accept, QByteArr
 	return response;
 }
 
-QString QWsServer::composeOpeningHandshakeResponseV6(QByteArray accept, QString protocol, QString extensions)
+QString QWebSocketServer::composeOpeningHandshakeResponseV6(QByteArray accept, QString protocol, QString extensions)
 {
 	QString response;
 	response += QLatin1String("HTTP/1.1 101 WebSocket Protocol Handshake\r\n");
@@ -360,7 +360,7 @@ QString QWsServer::composeOpeningHandshakeResponseV6(QByteArray accept, QString 
 	return response;
 }
 
-QString QWsServer::composeBadRequestResponse(QList<EWebsocketVersion> versions)
+QString QWebSocketServer::composeBadRequestResponse(QList<EWebsocketVersion> versions)
 {
 	QString response;
 	response += QLatin1String("HTTP/1.1 400 Bad Request\r\n");

@@ -36,7 +36,7 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 namespace QtWebsocket
 {
 
-class QWsSocket : public QAbstractSocket
+class QWebSocket : public QAbstractSocket
 {
 	Q_OBJECT
 
@@ -44,9 +44,9 @@ class QWsSocket : public QAbstractSocket
 
 public:
 	// ctor
-	QWsSocket(QObject* parent = NULL, QTcpSocket* socket = NULL, EWebsocketVersion ws_v = WS_V13);
+	QWebSocket(QObject* parent = NULL, QTcpSocket* socket = NULL, EWebsocketVersion ws_v = WS_V13);
 	// dtor
-	virtual ~QWsSocket();
+	virtual ~QWebSocket();
 
 	// Public methods
 	EWebsocketVersion version();
@@ -65,6 +65,7 @@ public:
 	void setOrigin(QString o);
 	void setProtocol(QString p);
 	void setExtensions(QString e);
+	void setWsMode(const WsMode &wsMode);
 
 	qint64 write(const QString& string); // write data as text
 	qint64 write(const QByteArray & byteArray); // write data as binary
@@ -77,8 +78,8 @@ public slots:
 	void ping();
 
 signals:
-	void frameReceived(QString frame);
-	void frameReceived(QByteArray frame);
+	void textMessageReceived(QString frame);
+	void binaryMessageReceived(QByteArray frame);
 	void pong(quint64 elapsedTime);
 	void encrypted();
 	void sslErrors(const QList<QSslError>& errors);
@@ -197,6 +198,7 @@ public:
 	static QRegExp regExpHttpRequest;
 	static QRegExp regExpHttpResponse;
 	static QRegExp regExpHttpField;
+
 };
 
 } // namespace QtWebsocket

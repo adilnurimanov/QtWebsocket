@@ -46,7 +46,7 @@ QWsHandshake::~QWsHandshake()
 // return false if some lines are missing
 bool QWsHandshake::read(QTcpSocket* tcpSocket)
 {
-	QWsSocket::regExpHttpField.setMinimal(true);
+	QWebSocket::regExpHttpField.setMinimal(true);
 
 	while (tcpSocket->canReadLine())
 	{
@@ -66,34 +66,34 @@ bool QWsHandshake::read(QTcpSocket* tcpSocket)
 			if (_wsMode == WsClientMode)
 			{
 				// CHECK HTTP GET REQUEST
-				QWsSocket::regExpHttpRequest.setMinimal(true);
-				if (QWsSocket::regExpHttpRequest.indexIn(line) == -1)
+				QWebSocket::regExpHttpRequest.setMinimal(true);
+				if (QWebSocket::regExpHttpRequest.indexIn(line) == -1)
 				{
 					httpRequestValid = false;
 					return false;
 				}
 				// Check HTTP GET REQUEST version
-				httpRequestVersion = QWsSocket::regExpHttpRequest.cap(2);
+				httpRequestVersion = QWebSocket::regExpHttpRequest.cap(2);
 				if (httpRequestVersion.toFloat() < 1.1)
 				{
 					httpRequestValid = false;
 					return false;
 				}
 				// get Resource name
-				resourceName = QWsSocket::regExpHttpRequest.cap(1);
+				resourceName = QWebSocket::regExpHttpRequest.cap(1);
 				continue;
 			}
 			else // serverSide
 			{
 				// check HTTP code
-				QWsSocket::regExpHttpResponse.setMinimal(true);
-				if (QWsSocket::regExpHttpResponse.indexIn(line) == -1)
+				QWebSocket::regExpHttpResponse.setMinimal(true);
+				if (QWebSocket::regExpHttpResponse.indexIn(line) == -1)
 				{
 					httpRequestValid = false;
 					return false;
 				}
-				quint16 httpCode = QWsSocket::regExpHttpResponse.cap(1).toUShort();
-				QString httpMessage = QWsSocket::regExpHttpResponse.cap(2);
+				quint16 httpCode = QWebSocket::regExpHttpResponse.cap(1).toUShort();
+				QString httpMessage = QWebSocket::regExpHttpResponse.cap(2);
 				if (httpCode != 101)
 				{
 					errorString = line;
@@ -104,19 +104,19 @@ bool QWsHandshake::read(QTcpSocket* tcpSocket)
 			}
 		}
 		// end of handshake
-		if (line == QWsSocket::emptyLine)
+		if (line == QWebSocket::emptyLine)
 		{
 			complete = true;
 			break;
 		}
 		// check field
-		if (QWsSocket::regExpHttpField.indexIn(line) == -1)
+		if (QWebSocket::regExpHttpField.indexIn(line) == -1)
 		{
 			// Bad http field
 			continue;
 		}
 		// Extract field
-		fields.insert(QWsSocket::regExpHttpField.cap(1), QWsSocket::regExpHttpField.cap(2));
+		fields.insert(QWebSocket::regExpHttpField.cap(1), QWebSocket::regExpHttpField.cap(2));
 	}
 	if ((!complete) && (fields.size() > 1000)) // incase of garbage input
 	{

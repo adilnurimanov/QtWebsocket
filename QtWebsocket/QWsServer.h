@@ -41,15 +41,15 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 namespace QtWebsocket
 {
 
-class QWsServer : public QObject
+class QWebSocketServer : public QObject
 {
 	Q_OBJECT
 
 public:
 	// ctor
-	QWsServer(QObject* parent = 0, Protocol allowedProtocols = Tcp);
+	QWebSocketServer(QObject* parent = 0, Protocol allowedProtocols = Tcp);
 	// dtor
-	virtual ~QWsServer();
+	virtual ~QWebSocketServer();
 
 	// public functions
 	void close();
@@ -58,7 +58,7 @@ public:
 	bool isListening();
 	bool listen(const QHostAddress & address = QHostAddress::Any, quint16 port = 0);
 	int maxPendingConnections();
-	virtual QWsSocket* nextPendingConnection();
+	virtual QWebSocket* nextPendingConnection();
 	QNetworkProxy proxy();
 	QHostAddress serverAddress();
 	QAbstractSocket::SocketError serverError();
@@ -75,7 +75,7 @@ signals:
 
 protected:
 	// protected functions
-	void addPendingConnection(QWsSocket* socket);
+	void addPendingConnection(QWebSocket* socket);
 	virtual void incomingConnection(int socketDescriptor);
 
 private slots:
@@ -90,7 +90,7 @@ private:
 	// private attributes
 	QTcpServer* tcpServer;
 	QTlsServer tlsServer;
-	QQueue<QWsSocket*> pendingConnections;
+	QQueue<QWebSocket*> pendingConnections;
 	QHash<const QTcpSocket*, QWsHandshake*> handshakeBuffer;
 
 	bool useSsl;

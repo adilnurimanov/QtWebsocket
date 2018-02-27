@@ -37,6 +37,10 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 
+#if (QT_VERSION <= QT_VERSION_CHECK(5, 0, 0))
+typedef qint64 qintptr;
+#endif
+
 namespace QtWebsocket
 {
 
