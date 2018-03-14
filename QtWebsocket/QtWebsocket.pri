@@ -1,4 +1,5 @@
 QT += network
+DEFINES += QT_OPENSSL
 
 INCLUDEPATH += $$PWD/
 
@@ -7,7 +8,6 @@ SOURCES += \
     $$PWD/QWsSocket.cpp \
     $$PWD/QWsHandshake.cpp \
     $$PWD/QWsFrame.cpp \
-    $$PWD/QTlsServer.cpp \
     $$PWD/functions.cpp
 
 HEADERS += \
@@ -15,7 +15,6 @@ HEADERS += \
     $$PWD/QWsSocket.h \
     $$PWD/QWsHandshake.h \
     $$PWD/QWsFrame.h \
-    $$PWD/QTlsServer.h \
     $$PWD/functions.h \
     $$PWD/WsEnums.h
 

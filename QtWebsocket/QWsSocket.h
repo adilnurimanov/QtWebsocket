@@ -23,6 +23,7 @@ along with QtWebsocket.  If not, see <http://www.gnu.org/licenses/>.
 #include <QRegExp>
 #include <QTcpSocket>
 #include <QSslSocket>
+#include <QSslError>
 #include <QSsl>
 #include <QSslKey>
 #include <QHostAddress>
